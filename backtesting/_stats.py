@@ -82,10 +82,24 @@ def compute_stats(
     loss_trades = trades_df[trades_df['ReturnPct'] <= 0]
     num_of_win_trades = win_trades.shape[0]
     num_of_loss_trades = loss_trades.shape[0]
-    win_rate = num_of_win_trades / (num_of_loss_trades + num_of_win_trades)
-    loss_rate = 1 - win_rate
-    avg_win = win_trades["ReturnPct"].sum() / num_of_win_trades
-    avg_loss = loss_trades["ReturnPct"].sum() / num_of_loss_trades
+
+    if num_of_loss_trades + num_of_win_trades > 0:
+        win_rate = num_of_win_trades / (num_of_loss_trades + num_of_win_trades)
+        loss_rate = 1 - win_rate
+    else:
+        win_rate = np.nan
+        loss_rate = np.nan
+
+    if num_of_win_trades > 0:
+        avg_win = win_trades["ReturnPct"].sum() / num_of_win_trades
+    else:
+        avg_win = np.nan
+
+    if num_of_loss_trades > 0:
+        avg_loss = loss_trades["ReturnPct"].sum() / num_of_loss_trades
+    else:
+        avg_loss = np.nan
+
 
     def _round_timedelta(value, _period=_data_period(index)):
         if not isinstance(value, pd.Timedelta):
