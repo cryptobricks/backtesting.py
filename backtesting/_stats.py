@@ -8,6 +8,10 @@ from ._util import _data_period
 if TYPE_CHECKING:
     from .backtesting import Strategy, Trade
 
+def get_alpha_and_beta(x, y):
+    A = np.vstack([x, np.ones(len(x))]).T
+    return np.linalg.lstsq(A, y)[0]
+
 
 def compute_drawdown_duration_peaks(dd: pd.Series):
     iloc = np.unique(np.r_[(dd == 0).values.nonzero()[0], len(dd) - 1])
@@ -41,6 +45,7 @@ def compute_stats(
 ) -> pd.Series:
     assert -1 < risk_free_rate < 1
 
+    print(ohlc_data)
     index = ohlc_data.index
     dd = 1 - equity / np.maximum.accumulate(equity)
     dd_dur, dd_peaks = compute_drawdown_duration_peaks(pd.Series(dd, index=index))
@@ -100,11 +105,13 @@ def compute_stats(
     day_returns = np.array(np.nan)
     annual_trading_days = np.nan
     if isinstance(index, pd.DatetimeIndex):
+        baseline_day_returns = ohlc_data['Close'].resample('D').last().dropna().pct_change()
         day_returns = equity_df['Equity'].resample('D').last().dropna().pct_change()
         gmean_day_return = geometric_mean(day_returns)
         annual_trading_days = float(
             365 if index.dayofweek.to_series().between(5, 6).mean() > 2/7 * .6 else
             252)
+    alpha, beta = get_alpha_and_beta(baseline_day_returns.dropna().values, day_returns.dropna().values)
 
     # Annualized return and risk metrics are computed based on the (mostly correct)
     # assumption that the returns are compounded. See: https://dx.doi.org/10.2139/ssrn.3054517
@@ -144,6 +151,8 @@ def compute_stats(
     s.loc['_strategy'] = strategy_instance
     s.loc['_equity_curve'] = equity_df
     s.loc['_trades'] = trades_df
+    s.loc['Alpha'] = alpha
+    s.loc['Beta'] = beta
 
     s = _Stats(s)
     return s
