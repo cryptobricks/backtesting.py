@@ -135,7 +135,10 @@ def compute_stats(
         annual_trading_days = float(
             365 if index.dayofweek.to_series().between(5, 6).mean() > 2/7 * .6 else
             252)
-    alpha, beta = get_alpha_and_beta(baseline_day_returns.dropna().values, day_returns.dropna().values)
+        alpha, beta = get_alpha_and_beta(baseline_day_returns.dropna().values, day_returns.dropna().values)
+    else:
+        alpha = np.nan
+        beta = np.nan
 
     # Annualized return and risk metrics are computed based on the (mostly correct)
     # assumption that the returns are compounded. See: https://dx.doi.org/10.2139/ssrn.3054517
