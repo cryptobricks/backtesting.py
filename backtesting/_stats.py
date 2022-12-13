@@ -108,6 +108,8 @@ def compute_stats(
     s.loc['Return [%]'] = (equity[-1] - equity[0]) / equity[0] * 100
     c = ohlc_data.Close.values
     s.loc['Buy & Hold Return [%]'] = (c[-1] - c[0]) / c[0] * 100  # long-only return
+    s.loc['Runup'] = equity.max() / equity[0]
+    s.loc['Drawdown'] = equity.min() / equity[0]
 
     gmean_day_return: float = 0
     day_returns = np.array(np.nan)
