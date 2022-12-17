@@ -12,6 +12,7 @@ class SmaCross(Strategy):
         self.ma1 = self.I(SMA, self.data, 10)
         self.ma2 = self.I(SMA, self.data, 20)
         self.rsi14 = self.I(RSI,self.data, 14)
+        print(self.rsi14)
 
     def next(self):
         if crossover(self.ma1, self.ma2):
