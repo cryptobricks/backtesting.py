@@ -10,10 +10,11 @@ ivalue: SIGNED_NUMBER
 function: name "(" args ")"
 !name: "RSI" | "MA"
 args: arg [("," arg)*]
-arg: SIGNED_NUMBER -> number
+arg: INT -> int_number
 !price: "Close" | "Open" | "High" | "Low"
 %import common.WS
 %import common.SIGNED_NUMBER
+%import common.INT
 %ignore WS
 """, start='cond')
 
@@ -22,6 +23,7 @@ class WrongOps(Exception):
 
 class StrategyBackend(Transformer):
     join_type = None
+    funcs_deps = []
     def cond(self, args):
         args = [arg for arg in args if arg is not None]
         return args
@@ -52,16 +54,18 @@ class StrategyBackend(Transformer):
             "value": float(args[0].value),
         }
 
-    def number(self, n):
+    def int_number(self, n):
         (n,) = n
-        return float(n)
+        return int(n)
     
     def function(self, args):
-        return {
+        f =  {
             "type": "func",
             "name": args[0],
             "args": args[1]
         }
+        self.funcs_deps.append(f)
+        return f
 
     def price(self, args):
         return {
@@ -76,13 +80,16 @@ class StrategyBackend(Transformer):
         return tokens[0].value
 
 def parse_udf(expression: str):
-    result = udf_parser.parse(expression)
-    return result
+    tree = udf_parser.parse(expression)
+    sb = StrategyBackend()
+    stas = sb.transform(tree)
+    return {
+        "cond": sb.join_type,
+        "deps": sb.funcs_deps,
+        "statements": stas
+    }
 
 if __name__ == "__main__":
-    s = "RSI(40, 20) > 40 and RSI(40) < Close"
-    res = parse_udf(s)
-    # print(res.pretty())
-    sb = StrategyBackend()
-    s = sb.transform(res)
-    print(s)
+    s = "RSI(200) > 40 and RSI(40) < Close"
+    sb = parse_udf(s)
+    print(sb)

@@ -45,7 +45,6 @@ def compute_stats(
 ) -> pd.Series:
     assert -1 < risk_free_rate < 1
 
-    print(ohlc_data)
     index = ohlc_data.index
     dd = 1 - equity / np.maximum.accumulate(equity)
     dd_dur, dd_peaks = compute_drawdown_duration_peaks(pd.Series(dd, index=index))
