@@ -145,6 +145,7 @@ def compute_stats(
     # our risk doesn't; they use the simpler approach below.
     annualized_return = (1 + gmean_day_return)**annual_trading_days - 1
     s.loc['Day Returns'] = day_returns
+    s.loc['Hold Day Returns'] = baseline_day_returns
     s.loc['Return (Ann.) [%]'] = annualized_return * 100
     s.loc['Volatility (Ann.) [%]'] = np.sqrt((day_returns.var(ddof=int(bool(day_returns.shape))) + (1 + gmean_day_return)**2)**annual_trading_days - (1 + gmean_day_return)**(2*annual_trading_days)) * 100  # noqa: E501
     # s.loc['Return (Ann.) [%]'] = gmean_day_return * annual_trading_days * 100
